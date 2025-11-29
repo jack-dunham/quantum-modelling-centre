@@ -20,3 +20,13 @@ jdunham:
     - label: "GitHub"
       icon: "fab fa-github"
       url: "https://github.com/jack-dunham"
+
+wbruzda:
+  name: "Wojciech Bruzda"
+  affiliations:
+    - "Center for Theoretical Physics of Polish Academy of Sciences, al. Lotników 32/46, 02-668 Warszawa, Poland"
+  links:
+    - label: "GitHub"
+      icon: "fab fa-github"
+      url: "https://github.com/matrix-toolbox"
+ 

@@ -1,21 +1,29 @@
 ---
 title: XMDS
-author: jdunham
+author:
+  - jdunham
+  - wbruzda
 ---
 
-{% if page.author %}
-  {% assign author_id = page.author %}
-  {% assign author = site.data.authors[author_id] %}
+{% assign authors_raw = page.authors | default: page.author %}
+{% assign authors = authors_raw | arrayify %}
+
+{% if authors %}
   <p class="page__meta" style="margin-top: 0.5em; margin-bottom: 2.0em; line-height: 1.2; color: grey; font-size: 1.0em; font-style: italic;">
-    By {{ author.name }}
+    By
+    {% for author_id in authors %}
+      {% assign author = site.data.authors[author_id] %}
+      {{ author.name }}{% if forloop.last == false %}, {% endif %}
+    {% endfor %}
   </p>
 {% endif %}
 
+
 # Installing XMDS locally
 
-This section will walk you through building XMDS as user. This guide has been adapted from [the documentation](http://www.xmds.org/installation.html).
-XMDS can be a little tricky to install as a user due to the penchant of `pip`'s to install packages system wide.
-If you do not have appropriate rights to install software system wide, *this will not work*.
+XMDS(2) is an open-source package for running numerical simulations and solving systems of partial differential equations (PDEs). It allows the user to write a high-level input file describing the problem and automatically generates optimized C/C++ code to solve it.
+
+This section will walk you through building XMDS as user. This guide has been adapted from [the documentation](http://www.xmds.org/installation.html). XMDS can be a little tricky to install as a user due to the penchant of `pip`'s to install packages system wide. If you do not have appropriate rights to install software system wide, *this will not work*.
 
 ## Prerequisites
 We require the following C libraries: **FFTW, MPI, MLK** and a **C++ compiler**. 
@@ -25,6 +33,8 @@ To load these, do
 module load libs/fftw
 module load libs/mkl
 ```
+These are commands that talk to an environment‑module system. It is a utility most HPC install to let users switch between many different software stacks without polluting the global system. So, the `module load` syntax only works on systems that provide the module infrastructure. On a regular desktop one would
+
 Loading FFTW will load MPI and a compiler as prerequisites.
 ### Python 3
 We also require Python 3:
@@ -38,23 +48,29 @@ pip3 install <package> --user
 The `--user` option is required as some packages will attempt to install system wide which will fail due to lack of permissions.
 
 ### HDF5
-HDF5 is a C library, however it may not be pre-installed on your HPC cluster (available in the module list). If that is the case, it can be installed from source.
-Download the [HDF5 source code](https://www.hdfgroup.org/downloads/hdf5/source-code/) choosing the `tar.gz` file from the list, then move this file to your home directory using something like `scp`. 
-I suggest you make a directory called `~/software` or something if you don't have one already. 
-Move into the directory containing the tar ball and extract it using 
+HDF5 is a widely used data model, library, and file format for storing and managing large and complex datasets, commonly used in scientific computing. HDF5 is implemented as a C library, but it may not be pre-installed on your HPC cluster or available in the module list. If it is not available, it can be installed from source.
+
+To install from source:
+
+1. Download the [HDF5 source code](https://www.hdfgroup.org/download-hdf5/), selecting the `tar.gz` file from the official list.
+2. Move this file to your home directory using a tool such as `scp`.
+3. It is suggested to create a directory called `~/software` (or a similar location) if one does not already exist.
+4. Navigate to the directory containing the tarball and extract it using:
+
 ```bash
 tar -xf hdf5-X.X.X.tar.gz
 ```
+
 with the Xs replaced with the version number you are installing. 
 Now we need to compile HDF5. Move into the extracted directory. Then run 
 ```
 ./configure --prefix=$HOME/.local
 ```
-This may take a few seconds. If you install your binaries, libraries, and header files in some other directory then change `--prefix` appropriately. If you don't know what   these means, then just use tha above.  Then do:
+This may take a few seconds. If you install your binaries, libraries, and header files in some other directory then change `--prefix` appropriately. If you do not know what these means, then just use that above. Then do:
 ```
 make
 ```
-which may take a while, so go make a cup of tea or something similar. Once this completes, run 
+which may take a while. Once this completes, run 
 ```
 make install
 ```

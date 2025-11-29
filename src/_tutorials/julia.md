@@ -1,16 +1,22 @@
 ---
 title: "Julia"
-author: jdunham
+author:
+  - jdunham
+  - wbruzda
 ---
 
-{% if page.author %}
-  {% assign author_id = page.author %}
-  {% assign author = site.data.authors[author_id] %}
+{% assign authors_raw = page.authors | default: page.author %}
+{% assign authors = authors_raw | arrayify %}
+
+{% if authors %}
   <p class="page__meta" style="margin-top: 0.5em; margin-bottom: 2.0em; line-height: 1.2; color: grey; font-size: 1.0em; font-style: italic;">
-    By {{ author.name }}
+    By
+    {% for author_id in authors %}
+      {% assign author = site.data.authors[author_id] %}
+      {{ author.name }}{% if forloop.last == false %}, {% endif %}
+    {% endfor %}
   </p>
 {% endif %}
-
 
 [Julia](https://julialang.org) is an open-source programming language particularly suited to research software engineering.
 In this guide, we provide you with some *opinionated* tips on using the language.
@@ -52,16 +58,14 @@ where we have then added the [Plots](https://github.com/JuliaPlots/Plots.jl) pac
 In contrast to Python's `venv`, Julia environments are very lightweight and consist of two files:
 
 - `Project.toml`: lists all the packages used by the environment, which can be considered a list of dependencies if the environment represents a package. 
-- `Manifest.toml`: is machine generated and lists the entire dependency tree down to the exact verion of the packages. This is so the exact state of environment can be reproduced.
+- `Manifest.toml`: is machine-generated file that records the entire dependency tree down to the exact versions of all packages, ensuring the environment can be exactly reproduced.
 
-Note, neither of these files get generated if no packages are added, i.e. simply executing `julia>]activate .` is not enough create these files if they do not exist already. 
-An environment can also be activate from the command line when launching Julia:
+
+Note that neither file is created automatically if no packages have been added. Simply executing `julia>] activate .` is not enough to generate them if they do not already exist. An environment can also be activate from the command line when launching Julia:
 ```bash
 julia --project=. myscript.jl
 ```
-which will execute `myscript.jl` in the environment associated with the working directory.
-This is where loading the package Pkg can be useful. 
-One can for example first run:
+which executes `myscript.jl` within the environment associated with the current working directory. This is where loading the package Pkg can be useful. One can for example first run:
 ```bash
 julia --project=. -e "using Pkg; Pkg.instantiate()"
 ```
@@ -99,9 +103,7 @@ you will notice this change is not reflected in the REPL:
 julia> myadd(2, 3)
 -1
 ```
-One would need to *restart* julia and then `include` the package again, which is impracticle when testing code. 
-To solve this, there is one essential package not included in the Julia standard library: [Revise.jl]("https://timholy.github.io/Revise.jl/stable/"). 
-Revise.jl will automatically include update any changes to source code loaded in the REPL, without require a REPL restart, provided the file is loaded using
+Normally, one would need to restart Julia and then `include` the package again, which is impractical when testing code. To address this, there is an essential package not included in the Julia standard library: [Revise.jl](https://timholy.github.io/Revise.jl/stable/). Revise.jl automatically updates any changes to source code loaded in the REPL without requiring a restart, provided the file is loaded using:
 ```julia
 using Revise
 julia> Revise.includet("myadd.jl") # notice the `t` in `includet`
@@ -122,19 +124,20 @@ julia --startup-file=no
 
 ## CUDA
 
-When loading the `CUDA` package, Julia will attempt to download a suitable version of the CUDA toolkit based on the devices it finds. 
-The problem is compute nodes typically do not have internet access, so this fails.
-Therefore, we must tell Julia to use locally installed CUDA toolkit rather than attempting to downloading binaries.
-Lets assume [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) v12.2 is installed on the HPC cluster by the system admin.
-Then launching a Julia REPL and executing  
+
+
+When loading the `CUDA` package, Julia will by default attempt to download a suitable version of the CUDA toolkit based on the devices it detects. On compute nodes, however, internet access is typically unavailable, so this approach fails. Therefore, Julia must be instructed to use a locally installed CUDA toolkit instead of attempting to download binaries.
+
+Assume that [CUDA Toolkit](https://developer.nvidia.com/cuda-toolkit) v12.2 is installed on the HPC cluster by the system administrator. Launch a Julia REPL and execute:
 ```julia
 julia> using CUDA
 julia> CUDA.set_runtime_version!(v"12.2"; local_toolkit=true)
 ```
-will create a file named `LocalPreferences.toml` in the working directory, dictating Julia to use any local available CUDA Toolkit.
-It is not strictly necessary to pass the version CUDA runtime version to this function, however it allows packages to precompile and may be required for some to work correctly. 
-The version passed should match the CUDA runtime version installed on the node. 
-The system admin should be able to tell you this information, or you can compile and run this small programme to print information about he devices available and CUDA toolkit version information.
+This creates a file named `LocalPreferences.toml` in the working directory, instructing Julia to use the locally available CUDA toolkit.
+
+Passing the version to `CUDA.set_runtime_version!` is not strictly necessary, but it ensures that packages can precompile correctly and may be required for some to work properly. The version specified should match the CUDA runtime installed on the node. Your system administrator can provide this information, or you can compile and run a small program to query the available devices and the installed CUDA toolkit version.
+
+The version passed should match the CUDA runtime version installed on the node. The system admin should be able to tell you this information, or you can compile and run this small programme to print information about he devices available and CUDA toolkit version information.
 
 ## Other GP-GPU APIs
 
