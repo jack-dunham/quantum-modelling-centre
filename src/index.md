@@ -5,19 +5,19 @@ intro:
     - excerpt: ""
 software:
     - title: "Research Software"
-      image_path: https://picsum.photos/300/200
+      image_path: /assets/images/research_codes.png
       excerpt: "Research Software supported by the Quantum Modelling Center at CFT."
       url: "/software/"
       btn_label: "Click here"
 problems:
     - title: "Example Problems"
-      image_path: https://picsum.photos/300/201
+      image_path: /assets/images/Ising_puzzle.png # https://picsum.photos/300/201
       excerpt: "Pedagogical walk-throughs through some toy problems soluable with our software packages."
       url: "/problems/"
       btn_label: "Click here"
 tutorials:
     - title: "Tutorials"
-      image_path: https://picsum.photos/300/202
+      image_path: /assets/images/tutorials.png # https://picsum.photos/300/202
       excerpt: "Assorted guides on the theory and tools used across the software packages."
       url: "/tutorials/"
       btn_label: "Click here"
