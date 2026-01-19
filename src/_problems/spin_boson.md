@@ -17,7 +17,7 @@ excerpt: "In this tutorial, we will study the behaviour of coupled (Jaynes-Cummi
   </p>
 {% endif %}
 
-In this tutorial, we will use exact diagonalization (in a truncated Fock basis for bosons), and [Positive P]({{ site.baseurl }}/software/SBPP) to study the behaviour of some examples of driven dissipative Jaynes-Cummings models and Jaynes-Cummings-Hubbard lattice models.  
+In this tutorial, we will use [Positive P]({{ site.baseurl }}/software/SBPP) to study the behaviour of some examples of driven dissipative Jaynes-Cummings models and Jaynes-Cummings-Hubbard lattice models.  
 
 # Recommended tutorials
 
