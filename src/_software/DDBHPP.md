@@ -1,6 +1,6 @@
 ---
 title: "DDBHPP"
-author: A-Ferrier
+author: aferrier
 header: 
     teaser: 
 github: "A-Ferrier/DDBHPP"
