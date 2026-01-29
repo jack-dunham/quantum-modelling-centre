@@ -6,7 +6,7 @@ header:
 github: ""
 layout: single
 classes: wide
-excerpt: "Positive-P simulations for Driven-dissipative Jaynes-Cummings and Jaynes-Cummings-Hubbard models written for xmds2, with optional Matlab post-processing library. Keywords: Open Quantum Systems, Dynamics, Stochastic Phase space methods, Positive P, Bosons, spins, Jaynes-Cummings, Lattices"
+excerpt: "Positive-P simulations for Driven-dissipative Jaynes-Cummings and Jaynes-Cummings-Hubbard models written for xmds2, with optional Matlab post-processing library. Keywords: Open Quantum Systems, Dynamics, Stochastic Phase space methods, Positive P, Bosons, Spins, Jaynes-Cummings, Lattices"
 ---
 
 {% if page.author %}
@@ -19,6 +19,6 @@ excerpt: "Positive-P simulations for Driven-dissipative Jaynes-Cummings and Jayn
 
 Positive-P simulations for Driven-dissipative Jaynes-Cummings and Jaynes-Cummings-Hubbard models written for xmds2, with optional Matlab post-processing library. 
 
-Keywords: Open Quantum Systems, Dynamics, Stochastic Phase space methods, Positive P, Bosons, spins, Jaynes-Cummings, Lattices
+Keywords: Open Quantum Systems, Dynamics, Stochastic Phase space methods, Positive P, Bosons, Spins, Jaynes-Cummings, Lattices
 
 To be completed.
