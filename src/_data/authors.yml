@@ -29,4 +29,13 @@ wbruzda:
     - label: "GitHub"
       icon: "fab fa-github"
       url: "https://github.com/matrix-toolbox"
- 
+
+ aferrier:
+  name: "Alex Ferrier"
+  affiliations:
+    - "Department of Physics and Astronomy, University College London, Gower Street, London, WC1E 6BT, United Kingdom"
+    - "Center for Theoretical Physics of Polish Academy of Sciences, al. Lotników 32/46, 02-668 Warszawa, Poland"
+  links:
+    - label: "GitHub"
+      icon: "fab fa-github"
+      url: "https://github.com/A-Ferrier"
