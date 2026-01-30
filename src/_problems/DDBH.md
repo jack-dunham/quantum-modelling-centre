@@ -34,7 +34,7 @@ $$
 where $\Delta$ gives the detuning between the on-site energy and the driving frequency, $U$ the two-body interaction strength, $F_j$ the driving amplitude on each site $j$, and $J_{j,j'}$ the hopping between sites (typically $J_{j,j'} = J$ for connected sites and 0 otherwise).  Including the effects of dissipation to the external environment, the evolution of the system as described by the many-body density matrix $\hat{\rho}$ is given by a Markovian Lindblad master equation
 
 \begin{equation} 
-    \frac{\partial\hat{\rho}}{\partial t} = -i\left[\hat{H}, \hat{\rho}\right] + \sum_j\frac{\gamma}{2}\left(2\hat{a}_j\hat{\rho}\hat{a}^\dagger_j - \hat{a}^\dagger_j\hat{a}_j\hat{\rho} - \hat{\rho}\hat{a}^\dagger_j\hat{a}_j\right) 
+    \frac{\partial\hat{\rho}}{\partial t} = -i\left[\hat{H}, \hat{\rho}\right] + \sum_j\frac{\gamma}{2}\left(2\hat{a}_j\hat{\rho}\hat{a}^\dagger_j - \hat{a}^\dagger_j\hat{a}_j\hat{\rho} - \hat{\rho}\hat{a}^\dagger_j\hat{a}_j\right) \, , 
 \end{equation}
 
 where $\gamma$ is the dissipation rate (we set $\gamma=1$ in our units).

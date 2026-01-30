@@ -2,7 +2,7 @@
 title: "SBPP"
 author: aferrier
 header: 
-    teaser: 
+    teaser: /assets/images/PPPlaceholder.png
 github: ""
 layout: single
 classes: wide
