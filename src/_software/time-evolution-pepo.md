@@ -2,7 +2,7 @@
 title: "TimeEvolutionPEPO.jl"
 author: jdunham
 header:
-    teaser: /assets/images/time-evolution-pepo.png
+    teaser: /assets/images/time-evolution-pepo-new.png
     caption: "From:"
 github: "jack-dunham/TimeEvolutionPEPO.jl"
 deps:

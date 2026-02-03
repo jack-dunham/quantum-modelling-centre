@@ -1,19 +1,25 @@
 ---
 title: "Dissipative Ising Model"
 collection: problems
-author: dhryniuk
+author:
+- dhryniuk
+- jdunham
 show_author: true
 toc_sidebar: true
 layout: single
 classes: wide
 excerpt: "In this tutorial, we will study the properties of a class of dissipative transverse-field Ising models."
 ---
+{% assign authors_raw = page.authors | default: page.author %}
+{% assign authors = authors_raw | arrayify %}
 
-{% if page.author %}
-  {% assign author_id = page.author %}
-  {% assign author = site.data.authors[author_id] %}
+{% if authors %}
   <p class="page__meta" style="margin-top: 0.5em; margin-bottom: 2.0em; line-height: 1.2; color: grey; font-size: 1.0em; font-style: italic;">
-    By {{ author.name }}
+    By
+    {% for author_id in authors %}
+      {% assign author = site.data.authors[author_id] %}
+      {{ author.name }}{% if forloop.last == false %}, {% endif %}
+    {% endfor %}
   </p>
 {% endif %}
 
@@ -340,14 +346,172 @@ The converged magnetizations for $N=20$ can now be loaded and plotted against ED
 > - Suppose the interaction with the external environment leads to spin decay to the $\ket{\rightarrow}$ state, described by the Lindblad jump operator $\Gamma_k = \sqrt{\gamma}(\sigma^z - i\sigma^y)/2$. Compare the resultant phase diagrams for $m_x$, $m_y$, and $m_z$.
 > - Instead of starting each optimization process from a completely random MPO, it may be more efficient to load an already converged MPO at slightly different model parameter values. Try implementing this by appropriately modifying the above scripts.
 
-
-
-# Dynamics
-
-To be completed.
-
-
-
 # Two-dimensional lattices - iPEPO
 
-To be completed.
+We will now consider the two-dimensional dissipative Ising model.
+To do so, we will use a two-dimensional tensor network ansatz known as an infinite projected-entangled pair state to solve the dissipative Ising model directly in the thermodynamic limit.
+To get started, load TimeEvolutionPEPO.jl and the TensorKit package.jl
+```julia
+using TimeEvolutionPEPO
+using TensorKit
+```
+## Computing Observables
+
+To calculate expectation values of observables, one must first construct a reduced density matrix from the tensor network.
+To do this, a boundary algorithm (and associated boundary bond dimension) must be chosen to compute the partial trace of the environment around those lattice sites to be left untraced.
+Such an object is represented by the `DensityMatrix` struct found in the TimeEvolutionPEPO package.
+A `DensityMatrix` can the be used to compute reduced density matrices.
+```julia
+function magnetisation(pepo::PEPO; alg = CTMRG(bonddim = 16, tol = 1e-8, verbose=false))
+    dm = DensityMatrix(pepo, alg)
+    rdm = partialtrace(dm, (1,1))
+
+    M = expval(rdm, PAULI[1])
+
+    return real(M)
+end
+```
+In practice it is useful to save the `DensityMatrix` object rather than running the boundary renormalization every time one wishes to compute a local observable.
+Also, the correlation length of a state can be directly accessed directly from the `DensityMatrix` object without first needing to compute a partial trace:
+
+## Running the Simulation
+
+Simulations must first be initialised using three arguments.
+First, a tensor network representation of an initial state must be defined.
+This can be one obtained from a different `Simulation` object by calling the function `quantumstate` on this object to return the `PEPO` associated with that simulation.
+```julia
+function newsim(model)
+    # Set initial state to a product state of spins pointing down along the z-axis on a two-by-two
+    # unit-cell
+    ρ = fill((0,0,-1), 2, 2)
+
+    # Set the bond dimension equal to 4
+    D = 4
+
+    # Initialise using the TEBD (with default options)
+    method = TEBD()
+
+    # Construct the tensor network. 
+    state = PEPO(ρ, 4)
+
+    sim = Simulation(state, model, method; timestep=0.025)
+
+    return sim
+end
+```
+We can then run the simulation be calling `simulate!`.
+```julia
+function runsim!(sim)
+    magn = Float64[]
+    time = Float64[]
+
+    # This custom function is executed at regular intervals during the simulation
+    callback = sim -> begin
+        # Get some useful simulation information 
+        info = simulationinfo(sim)
+
+        # Get tge `PEPO` object contained in `sim`
+        state = quantumstate(sim)
+
+        push!(magn, magnetisation(state))
+        push!(time, info.simtime)
+    end
+
+    # Initially, dynamics are faster, so execute callback every time step
+    simulate!(callback, sim; numsteps = 50, maxshots = 50, verbose=false)
+
+    # Sample only every 3rd time step for another 150 steps
+    simulate!(callback, sim; numsteps = 150, maxshots = 50, verbose=false)
+
+    return magn, time
+end
+```
+This time we will consider a different Ising model from the one used in the previous part of this tutorial, namely one with a transverse dissipator (along the $x$-axis) admitting an exact solution in the thermodynamic limit.
+Mathematically, the Hamiltonian is the following:
+\begin{equation}
+H = \frac{J}{4} \sum_{\langle i,j \rangle} \sigma^{z}_i \sigma^{z}_j
+\end{equation}
+with transverse dissipation $\Gamma_j = \frac{\sqrt{\gamma}}{2}(\sigma^y_j - i\sigma^z_j)$ which can be constructed in the TimeEvolutionPEPO package like so:
+```julia
+X, Y, Z = PAULI
+model = J -> Model(J / 4 * LocalOp(Z,Z) + Dissipator(0.5 * (Y - im * Z)))
+```
+where again we have set $\gamma = 1$.
+This can then be passed into the functions we have defined previously.
+```julia
+sim = newsim(model(1.0, 0.5));
+magn, time = runsim!(sim);
+```
+Note the `Simulation` object `sim` mutates in the process. 
+Some information pertaining to a given `Simulation` object can be obtained by calling:
+```julia
+simulationinfo(sim)
+```
+which can also be accessed in the callback function.
+Lets plot the results of the simulation using the Plots.jl package.
+```julia
+using Plots.jl # Make sure this is `add`ed to you environment!
+scatter(time, magn; xlabel = "time", ylabel = "x-magnetisation")
+```
+![ipepo-ising]({{ site.baseurl }}/assets/images/problems/ising/ipepo-ising.png)
+
+## Exact Solution
+
+This model can be solved exactly with help from the QuantumOptics package:
+```julia
+using QuantumOptics
+
+function ising_transverse_dissipator(J)
+    # Hamiltonian
+    basis = SpinBasis(1 // 2)
+    Id = identityoperator(basis)
+
+    σz = sigmaz(basis)
+
+    Γ = 0.5 * (sigmaz(basis) - im * sigmay(basis))
+
+    ⊗ = QuantumOptics.:⊗
+    H = J / 4 * σz ⊗ σz ⊗ Id ⊗ Id ⊗ Id
+    H += J / 4 * σz ⊗ Id ⊗ σz ⊗ Id ⊗ Id
+    H += J / 4 * σz ⊗ Id ⊗ Id ⊗ σz ⊗ Id
+    H += J / 4 * σz ⊗ Id ⊗ Id ⊗ Id ⊗ σz
+
+    Id = one(Γ)
+
+    Idlist = [Id for i in 1:5]
+    Idlist[1] = Γ
+    L = [tensor(circshift(Idlist, n)...) for n in 0:4]
+
+    return H, L
+end
+
+function exactsolve(J; numshots = 101, tf = 5.0)
+    ⊗ = QuantumOptics.:⊗
+
+    time = collect(range(0.0, tf, numshots))
+
+    basis = SpinBasis(1 // 2)
+
+    Ψzd = spindown(basis)
+
+    ρn = QuantumOptics.:⊗(Ψzd, dagger(Ψzd))
+    ρ0 = tensor([ρn for site in 1:5]...)
+
+    Id = identityoperator(basis)
+    σx = sigmax(basis)
+
+    H, L = ising_transverse_dissipator(J)
+
+    _, ρ_time_master = timeevolution.master(time, ρ0, H, L)
+
+    sx_time = real(QuantumOptics.expect(σx ⊗ Id ⊗ Id ⊗ Id ⊗ Id, ρ_time_master))
+    return time, sx_time
+end
+```
+## Exercises
+
+> - Compare the results from the simulation to the exact solution. What do you think the source of the discrepancy is?
+> - Consider both reducing the time step and increasing the bond dimension of the iPEPO ansatz. Are you able to obtain results visually indistinguishable from the exact solution? What about if you increasing the strength of the interaction $J$?
+> - By default, the TEBD algorithm in TimeEvolutionPEPO uses the simple update method to truncate each bond at each time step and therefore does not take into account the full lattice during truncation. Do you expect this to lead to significant truncation errors in general? Why or why not?
+> - Consider the previous question in the context of the exactly solvable model studied here. Do you have some intuition as to why such a model is so amenable to simulations using simple update?
+> - Try introducing a transverse field. How does this effect the performance of the simulation?
